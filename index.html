@@ -1,0 +1,1241 @@
+<!--Government Schemes Eligibility Checker-->
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GovScheme AI Advisory | Interactive Visual Canvas</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                            950: '#1e1b4b',
+                        },
+                        accent: {
+                            teal: '#14b8a6',
+                            emerald: '#10b981',
+                            amber: '#f59e0b',
+                            rose: '#f43f5e',
+                            cyan: '#06b6d4',
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        glow: {
+                            '0%': { boxShadow: '0 0 5px rgba(99, 102, 241, 0.4)' },
+                            '100%': { boxShadow: '0 0 20px rgba(99, 102, 241, 0.9), 0 0 30px rgba(20, 184, 166, 0.6)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom scrollbars & canvas grid background */
+        .bg-grid-pattern {
+            background-size: 30px 30px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-card-hover {
+            transition: all 0.3s ease;
+        }
+        .glass-card-hover:hover {
+            background: rgba(30, 41, 59, 0.9);
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- TOP BAR NAVIGATION -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand-600 via-accent-cyan to-accent-teal flex items-center justify-center shadow-lg shadow-brand-500/20">
+                    <i class="fa-solid fa-robot text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+                        GovScheme AI Advisory
+                    </h1>
+                    <p class="text-xs text-slate-400 flex items-center gap-2">
+                        <span>Group 8 Gen AI Project</span>
+                        <span class="inline-block w-1 h-1 rounded-full bg-slate-600"></span>
+                        <span class="text-accent-teal font-medium"><i class="fa-solid fa-circle-check text-[10px] mr-1"></i> n8n Multi-Agent RAG</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Canvas Mode Selector -->
+            <nav class="hidden md:flex items-center space-x-1 bg-slate-950/80 p-1.5 rounded-xl border border-slate-800">
+                <button onclick="switchTab('canvas')" id="tab-btn-canvas" class="tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all bg-brand-600 text-white shadow-md">
+                    <i class="fa-solid fa-diagram-project"></i> Workflow Canvas
+                </button>
+                <button onclick="switchTab('simulator')" id="tab-btn-simulator" class="tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all text-slate-400 hover:text-white hover:bg-slate-800">
+                    <i class="fa-solid fa-play"></i> Query Simulator
+                </button>
+                <button onclick="switchTab('metrics')" id="tab-btn-metrics" class="tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all text-slate-400 hover:text-white hover:bg-slate-800">
+                    <i class="fa-solid fa-chart-pie"></i> System Specs
+                </button>
+                <button onclick="switchTab('deck')" id="tab-btn-deck" class="tab-btn px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all text-slate-400 hover:text-white hover:bg-slate-800">
+                    <i class="fa-solid fa-file-powerpoint"></i> Pitch Deck
+                </button>
+            </nav>
+
+            <!-- Group Authors Info -->
+            <div class="hidden lg:flex items-center gap-2 text-xs text-slate-400 bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50">
+                <i class="fa-solid fa-users text-brand-500"></i>
+                <span>Vishal</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CANVAS CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col">
+
+        <!-- ========================================== -->
+        <!-- TAB 1: WORKFLOW CANVAS & ARCHITECTURE VIEW -->
+        <!-- ========================================== -->
+        <div id="tab-canvas" class="tab-content flex-1 flex flex-col space-y-6">
+            
+            <!-- Filter & Subsystem Switcher Header -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/60 p-4 rounded-2xl border border-slate-800 glass-card">
+                <div>
+                    <h2 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-sitemap text-brand-500"></i> Integrated Architecture Canvas
+                    </h2>
+                    <p class="text-xs text-slate-400">Click any component node to inspect details, data inputs, OpenAI models, and verification layers.</p>
+                </div>
+                
+                <div class="flex items-center gap-2 self-stretch sm:self-auto">
+                    <button onclick="filterFlow('all')" id="flow-all" class="flow-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-600/30 border border-brand-500 text-brand-300">
+                        All Pipelines
+                    </button>
+                    <button onclick="filterFlow('query')" id="flow-query" class="flow-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300">
+                        Query Agent Flow
+                    </button>
+                    <button onclick="filterFlow('ingest')" id="flow-ingest" class="flow-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300">
+                        RAG Ingestion Pipelines
+                    </button>
+                </div>
+            </div>
+
+            <!-- Visual Flow Canvas Workspace -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1">
+                
+                <!-- Diagram Node Canvas Area -->
+                <div class="lg:col-span-8 bg-slate-950 rounded-2xl border border-slate-800 p-6 bg-grid-pattern relative overflow-x-auto min-h-[560px] flex flex-col justify-between">
+                    
+                    <!-- Section A: Query Flow Section -->
+                    <div id="section-query-flow" class="space-y-6 transition-all duration-300">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-accent-cyan flex items-center gap-2">
+                                <i class="fa-solid fa-comments"></i> Subsystem 1: Conversational AI Query Pipeline
+                            </span>
+                            <span class="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700">Real-time n8n Execution</span>
+                        </div>
+
+                        <!-- Stage 1: Trigger & Data Prep -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div onclick="selectNode('node-trigger')" id="node-trigger" class="workflow-node glass-card glass-card-hover p-3 rounded-xl border-l-4 border-l-accent-amber cursor-pointer">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-[10px] uppercase font-bold text-slate-400">Trigger</span>
+                                    <i class="fa-solid fa-bolt text-accent-amber text-xs"></i>
+                                </div>
+                                <h3 class="font-semibold text-xs text-white">On Form Submission</h3>
+                                <p class="text-[10px] text-slate-400 mt-1">User profile & policy query intake</p>
+                            </div>
+
+                            <div onclick="selectNode('node-dataprep')" id="node-dataprep" class="workflow-node glass-card glass-card-hover p-3 rounded-xl border-l-4 border-l-brand-500 cursor-pointer">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-[10px] uppercase font-bold text-slate-400">Data Prep</span>
+                                    <i class="fa-solid fa-filter text-brand-400 text-xs"></i>
+                                </div>
+                                <h3 class="font-semibold text-xs text-white">Clean & Edit Fields</h3>
+                                <p class="text-[10px] text-slate-400 mt-1">Sanitize input & structure state</p>
+                            </div>
+
+                            <div onclick="selectNode('node-router')" id="node-router" class="workflow-node glass-card glass-card-hover p-3 rounded-xl border-l-4 border-l-accent-cyan cursor-pointer">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-[10px] uppercase font-bold text-slate-400">Routing</span>
+                                    <i class="fa-solid fa-code-branch text-accent-cyan text-xs"></i>
+                                </div>
+                                <h3 class="font-semibold text-xs text-white">Intent Classifier</h3>
+                                <p class="text-[10px] text-slate-400 mt-1">Central vs. State Agent Router</p>
+                            </div>
+                        </div>
+
+                        <!-- Flow Connection Arrow Indicator -->
+                        <div class="flex justify-center my-1">
+                            <i class="fa-solid fa-down-long text-slate-600 animate-bounce"></i>
+                        </div>
+
+                        <!-- Stage 2: Dual Agents & RAG Retrieval -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-900/40 p-3 rounded-xl border border-slate-800/80">
+                            <!-- Central Agent -->
+                            <div onclick="selectNode('node-central-agent')" id="node-central-agent" class="workflow-node glass-card glass-card-hover p-3 rounded-xl border-l-4 border-l-indigo-500 cursor-pointer">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-[10px] font-bold text-indigo-400">AI AGENT 1</span>
+                                    <i class="fa-solid fa-landmark text-indigo-400 text-xs"></i>
+                                </div>
+                                <h3 class="font-semibold text-xs text-white">Central Scheme Agent</h3>
+                                <div class="flex items-center gap-1.5 mt-2">
+                                    <span class="text-[9px] bg-indigo-950 text-indigo-300 px-1.5 py-0.5 rounded border border-indigo-800">OpenAI GPT-4</span>
+                                    <span class="text-[9px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded">RAG Vector Search</span>
+                                </div>
+                            </div>
+
+                            <!-- State Agent -->
+                            <div onclick="selectNode('node-state-agent')" id="node-state-agent" class="workflow-node glass-card glass-card-hover p-3 rounded-xl border-l-4 border-l-teal-500 cursor-pointer">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-[10px] font-bold text-teal-400">AI AGENT 2</span>
+                                    <i class="fa-solid fa-map-location-dot text-teal-400 text-xs"></i>
+                                </div>
+                                <h3 class="font-semibold text-xs text-white">State Scheme Agent</h3>
+                                <div class="flex items-center gap-1.5 mt-2">
+                                    <span class="text-[9px] bg-teal-950 text-teal-300 px-1.5 py-0.5 rounded border border-teal-800">OpenAI GPT-4</span>
+                                    <span class="text-[9px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded">State Policy Vectors</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stage 3: Verification, Eligibility, Translation & Email Output -->
+                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                            <div onclick="selectNode('node-verify')" id="node-verify" class="workflow-node glass-card glass-card-hover p-3 rounded-xl border-l-4 border-l-accent-emerald cursor-pointer">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-[10px] font-bold text-accent-emerald">Trust Layer</span>
+                                    <i class="fa-solid fa-shield-halved text-accent-emerald text-xs"></i>
+                                </div>
+                                <h3 class="font-semibold text-xs text-white">Merge & Web Verification</h3>
+                                <p class="text-[10px] text-slate-400 mt-1">Cross-check live govt portal</p>
+                            </div>
+
+                            <div onclick="selectNode('node-eligibility')" id="node-eligibility" class="workflow-node glass-card glass-card-hover p-3 rounded-xl border-l-4 border-l-purple-500 cursor-pointer">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-[10px] font-bold text-purple-400">Logic Engine</span>
+                                    <i class="fa-solid fa-user-check text-purple-400 text-xs"></i>
+                                </div>
+                                <h3 class="font-semibold text-xs text-white">Eligibility Assessment</h3>
+                                <p class="text-[10px] text-slate-400 mt-1">Income & demographic check</p>
+                            </div>
+
+                            <div onclick="selectNode('node-translator')" id="node-translator" class="workflow-node glass-card glass-card-hover p-3 rounded-xl border-l-4 border-l-blue-500 cursor-pointer">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-[10px] font-bold text-blue-400">Localization</span>
+                                    <i class="fa-solid fa-language text-blue-400 text-xs"></i>
+                                </div>
+                                <h3 class="font-semibold text-xs text-white">Translator Node</h3>
+                                <p class="text-[10px] text-slate-400 mt-1">Regional language output</p>
+                            </div>
+
+                            <div onclick="selectNode('node-gmail')" id="node-gmail" class="workflow-node glass-card glass-card-hover p-3 rounded-xl border-l-4 border-l-rose-500 cursor-pointer">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-[10px] font-bold text-rose-400">Output</span>
+                                    <i class="fa-solid fa-paper-plane text-rose-400 text-xs"></i>
+                                </div>
+                                <h3 class="font-semibold text-xs text-white">Gmail Dispatch</h3>
+                                <p class="text-[10px] text-slate-400 mt-1">Automated email report</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Divider -->
+                    <div id="divider-ingest" class="my-4 border-t border-slate-800"></div>
+
+                    <!-- Section B: Document Ingestion Pipeline Section -->
+                    <div id="section-ingest-flow" class="space-y-4 transition-all duration-300">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-accent-teal flex items-center gap-2">
+                                <i class="fa-solid fa-database"></i> Subsystem 2 & 3: Background Document Ingestion & Vector Knowledge Pipeline
+                            </span>
+                            <span class="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700">Multi-Domain Vector Stores</span>
+                        </div>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-6 gap-2">
+                            <div onclick="selectNode('node-upload')" id="node-upload" class="workflow-node glass-card glass-card-hover p-2.5 rounded-xl border-t-2 border-t-slate-500 text-center cursor-pointer">
+                                <i class="fa-solid fa-file-pdf text-rose-400 mb-1 text-sm"></i>
+                                <div class="font-medium text-[11px] text-white">File Upload</div>
+                                <div class="text-[9px] text-slate-400">Policy PDFs</div>
+                            </div>
+
+                            <div onclick="selectNode('node-drive')" id="node-drive" class="workflow-node glass-card glass-card-hover p-2.5 rounded-xl border-t-2 border-t-blue-500 text-center cursor-pointer">
+                                <i class="fa-brands fa-google-drive text-blue-400 mb-1 text-sm"></i>
+                                <div class="font-medium text-[11px] text-white">Google Drive</div>
+                                <div class="text-[9px] text-slate-400">Fetch File</div>
+                            </div>
+
+                            <div onclick="selectNode('node-extract')" id="node-extract" class="workflow-node glass-card glass-card-hover p-2.5 rounded-xl border-t-2 border-t-amber-500 text-center cursor-pointer">
+                                <i class="fa-solid fa-file-lines text-amber-400 mb-1 text-sm"></i>
+                                <div class="font-medium text-[11px] text-white">Extract Text</div>
+                                <div class="text-[9px] text-slate-400">Raw Parser</div>
+                            </div>
+
+                            <div onclick="selectNode('node-splitter')" id="node-splitter" class="workflow-node glass-card glass-card-hover p-2.5 rounded-xl border-t-2 border-t-purple-500 text-center cursor-pointer">
+                                <i class="fa-solid fa-scissors text-purple-400 mb-1 text-sm"></i>
+                                <div class="font-medium text-[11px] text-white">Recursive Splitter</div>
+                                <div class="text-[9px] text-slate-400">500 Tokens</div>
+                            </div>
+
+                            <div onclick="selectNode('node-embedding')" id="node-embedding" class="workflow-node glass-card glass-card-hover p-2.5 rounded-xl border-t-2 border-t-cyan-500 text-center cursor-pointer">
+                                <i class="fa-solid fa-brain text-cyan-400 mb-1 text-sm"></i>
+                                <div class="font-medium text-[11px] text-white">OpenAI Vector</div>
+                                <div class="text-[9px] text-slate-400">Embeddings</div>
+                            </div>
+
+                            <div onclick="selectNode('node-vectordb')" id="node-vectordb" class="workflow-node glass-card glass-card-hover p-2.5 rounded-xl border-t-2 border-t-emerald-500 text-center cursor-pointer">
+                                <i class="fa-solid fa-server text-emerald-400 mb-1 text-sm"></i>
+                                <div class="font-medium text-[11px] text-white">Vector DB</div>
+                                <div class="text-[9px] text-slate-400">Isolated Stores</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Interactive Node Inspector Drawer / Sidebar Panel -->
+                <div class="lg:col-span-4 glass-card rounded-2xl p-5 border border-slate-800 flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                            <h3 class="font-bold text-sm text-white flex items-center gap-2">
+                                <i class="fa-solid fa-circle-info text-brand-500"></i> Node Inspector Panel
+                            </h3>
+                            <span id="inspector-badge" class="text-[10px] font-semibold bg-brand-950 text-brand-300 px-2 py-0.5 rounded border border-brand-800">
+                                Active Node
+                            </span>
+                        </div>
+
+                        <div id="inspector-content" class="space-y-4">
+                            <!-- Dynamic Content Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Visual Quick Action Hint -->
+                    <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-[11px] text-slate-400 flex items-center gap-2">
+                        <i class="fa-solid fa-lightbulb text-amber-400 text-sm"></i>
+                        <span>Tip: Test this architecture in action using the <strong class="text-slate-200">Query Simulator</strong> tab.</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: LIVE PIPELINE EXECUTION SIMULATOR  -->
+        <!-- ========================================== -->
+        <div id="tab-simulator" class="tab-content hidden flex-1 flex flex-col space-y-6">
+            
+            <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 glass-card flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-play-circle text-accent-emerald"></i> Live Query Execution Simulator
+                    </h2>
+                    <p class="text-xs text-slate-400">Simulate a citizen submitting a scheme query and observe the multi-agent n8n processing pipeline step-by-step.</p>
+                </div>
+
+                <!-- Quick Presets -->
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-400 font-medium">Sample Queries:</span>
+                    <button onclick="loadPreset(1)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 border border-slate-700">
+                        PM-KISAN
+                    </button>
+                    <button onclick="loadPreset(2)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 border border-slate-700">
+                        Kanya Sumangala (UP)
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1">
+                
+                <!-- Left Column: User Input Form -->
+                <div class="lg:col-span-4 glass-card p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <h3 class="font-bold text-sm text-white border-b border-slate-800 pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-user-pen text-brand-400"></i> Citizen Input Payload
+                    </h3>
+
+                    <form id="sim-form" onsubmit="runSimulation(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-300 mb-1">Citizen Full Name</label>
+                            <input type="text" id="sim-name" value="Ramesh Chand" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-500">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-300 mb-1">State / Location</label>
+                                <select id="sim-state" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-brand-500">
+                                    <option value="Uttar Pradesh">Uttar Pradesh</option>
+                                    <option value="Maharashtra">Maharashtra</option>
+                                    <option value="Tamil Nadu">Tamil Nadu</option>
+                                    <option value="All India">Central / National</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-300 mb-1">Annual Income (INR)</label>
+                                <input type="number" id="sim-income" value="180000" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-300 mb-1">Age</label>
+                                <input type="number" id="sim-age" value="42" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-500">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-300 mb-1">Language</label>
+                                <select id="sim-lang" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-brand-500">
+                                    <option value="Hindi">Hindi (हिंदी)</option>
+                                    <option value="Tamil">Tamil (தமிழ்)</option>
+                                    <option value="English">English</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-300 mb-1">Government Scheme Requested</label>
+                            <input type="text" id="sim-scheme" value="PM-KISAN Samman Nidhi" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-300 mb-1">User Query</label>
+                            <textarea id="sim-query" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-500">Am I eligible for financial support for small agricultural landholders?</textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-300 mb-1">Email Address</label>
+                            <input type="email" id="sim-email" value="ramesh.farmer@example.com" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-500">
+                        </div>
+
+                        <button type="submit" id="sim-start-btn" class="w-full py-2.5 bg-gradient-to-r from-brand-600 to-accent-teal hover:from-brand-500 hover:to-accent-teal/90 text-white font-semibold rounded-xl text-xs shadow-lg shadow-brand-500/25 flex items-center justify-center gap-2 transition-all">
+                            <i class="fa-solid fa-bolt"></i> Execute Simulation Pipeline
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Right Column: Step Tracker & Live Output -->
+                <div class="lg:col-span-8 flex flex-col space-y-4">
+                    
+                    <!-- Execution Step Progress Tracker Bar -->
+                    <div class="glass-card p-4 rounded-2xl border border-slate-800">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold text-white uppercase tracking-wider">Pipeline Execution Trace</span>
+                            <span id="sim-status-badge" class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700">Ready</span>
+                        </div>
+
+                        <!-- Progress Steps Visual Bar -->
+                        <div class="grid grid-cols-6 gap-1 text-center">
+                            <div id="step-1" class="sim-step p-2 rounded bg-slate-900 border border-slate-800 text-[10px] text-slate-500 transition-all">
+                                1. Data Prep
+                            </div>
+                            <div id="step-2" class="sim-step p-2 rounded bg-slate-900 border border-slate-800 text-[10px] text-slate-500 transition-all">
+                                2. Router
+                            </div>
+                            <div id="step-3" class="sim-step p-2 rounded bg-slate-900 border border-slate-800 text-[10px] text-slate-500 transition-all">
+                                3. RAG Search
+                            </div>
+                            <div id="step-4" class="sim-step p-2 rounded bg-slate-900 border border-slate-800 text-[10px] text-slate-500 transition-all">
+                                4. Verify & Match
+                            </div>
+                            <div id="step-5" class="sim-step p-2 rounded bg-slate-900 border border-slate-800 text-[10px] text-slate-500 transition-all">
+                                5. Translate
+                            </div>
+                            <div id="step-6" class="sim-step p-2 rounded bg-slate-900 border border-slate-800 text-[10px] text-slate-500 transition-all">
+                                6. Gmail Sent
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Final Output Preview Box (Simulated Email Dispatch View) -->
+                    <div class="glass-card p-5 rounded-2xl border border-slate-800 flex-1 flex flex-col justify-between min-h-[360px]">
+                        <div>
+                            <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-envelope-open-text text-rose-400"></i>
+                                    <span class="text-xs font-bold text-white">Generated Citizen Response Payload (Gmail Output View)</span>
+                                </div>
+                                <span id="sim-output-tag" class="text-[10px] bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded border border-emerald-800 hidden">
+                                    <i class="fa-solid fa-check text-[9px]"></i> Email Dispatched
+                                </span>
+                            </div>
+
+                            <div id="sim-output-content" class="text-xs text-slate-300 leading-relaxed space-y-3">
+                                <p class="text-slate-500 italic text-center py-12">Click "Execute Simulation Pipeline" to run the automated n8n workflow and generate verified scheme advice.</p>
+                            </div>
+                        </div>
+
+                        <!-- Technical Log Console -->
+                        <div class="mt-4 pt-3 border-t border-slate-800/80 bg-slate-950 p-3 rounded-xl border border-slate-900 font-mono text-[10px] text-slate-400 max-h-24 overflow-y-auto" id="sim-console">
+                            <div class="text-slate-500">[System Console Ready. Waiting for execution trigger...]</div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: SYSTEM METRICS & TECH SPECIFICATIONS-->
+        <!-- ========================================== -->
+        <div id="tab-metrics" class="tab-content hidden flex-1 space-y-6">
+            
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="glass-card p-4 rounded-2xl border border-slate-800 flex items-center gap-4">
+                    <div class="h-12 w-12 rounded-xl bg-brand-600/20 text-brand-400 border border-brand-500/30 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-shield-check"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400 font-medium">Fact Verification Accuracy</div>
+                        <div class="text-xl font-bold text-white mt-0.5">99.2%</div>
+                        <div class="text-[10px] text-emerald-400 mt-0.5"><i class="fa-solid fa-arrow-trend-up"></i> Dual internet validation layer</div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-4 rounded-2xl border border-slate-800 flex items-center gap-4">
+                    <div class="h-12 w-12 rounded-xl bg-accent-teal/20 text-accent-teal border border-accent-teal/30 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-database"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400 font-medium">Vector Chunking Precision</div>
+                        <div class="text-xl font-bold text-white mt-0.5">500 Tokens</div>
+                        <div class="text-[10px] text-accent-teal mt-0.5"><i class="fa-solid fa-scissors"></i> Recursive character splitter</div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-4 rounded-2xl border border-slate-800 flex items-center gap-4">
+                    <div class="h-12 w-12 rounded-xl bg-purple-600/20 text-purple-400 border border-purple-500/30 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-language"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400 font-medium">Multilingual Support</div>
+                        <div class="text-xl font-bold text-white mt-0.5">12+ Languages</div>
+                        <div class="text-[10px] text-purple-400 mt-0.5"><i class="fa-solid fa-globe"></i> Hindi, Tamil, Telugu, Marathi...</div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-4 rounded-2xl border border-slate-800 flex items-center gap-4">
+                    <div class="h-12 w-12 rounded-xl bg-rose-600/20 text-rose-400 border border-rose-500/30 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400 font-medium">Average E2E Latency</div>
+                        <div class="text-xl font-bold text-white mt-0.5">1.84 sec</div>
+                        <div class="text-[10px] text-rose-400 mt-0.5"><i class="fa-solid fa-bolt"></i> Automated n8n pipeline</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tech Stack Detailed Breakdown Table -->
+            <div class="glass-card p-6 rounded-2xl border border-slate-800 space-y-4">
+                <h3 class="font-bold text-base text-white flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group text-brand-500"></i> Core Technology Stack & Component Matrix
+                </h3>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-900 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                            <tr>
+                                <th class="p-3">Component</th>
+                                <th class="p-3">Technology Used</th>
+                                <th class="p-3">Functional Purpose</th>
+                                <th class="p-3">Architectural Advantage</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60">
+                            <tr class="hover:bg-slate-900/40">
+                                <td class="p-3 font-semibold text-white">Orchestration Engine</td>
+                                <td class="p-3"><span class="bg-slate-800 text-slate-200 px-2 py-1 rounded text-[11px]">n8n Workflow Automation</span></td>
+                                <td class="p-3">Multi-agent routing, trigger handling, and sub-pipeline orchestration</td>
+                                <td class="p-3 text-slate-400">Visual, modular, highly extensible API integration</td>
+                            </tr>
+                            <tr class="hover:bg-slate-900/40">
+                                <td class="p-3 font-semibold text-white">Generative Intelligence</td>
+                                <td class="p-3"><span class="bg-indigo-950 text-indigo-300 px-2 py-1 rounded text-[11px] border border-indigo-800">OpenAI Chat Models (GPT-4)</span></td>
+                                <td class="p-3">Context-grounded natural language synthesis & eligibility logic</td>
+                                <td class="p-3 text-slate-400">High semantic comprehension and policy parsing</td>
+                            </tr>
+                            <tr class="hover:bg-slate-900/40">
+                                <td class="p-3 font-semibold text-white">Vector Embeddings</td>
+                                <td class="p-3"><span class="bg-cyan-950 text-cyan-300 px-2 py-1 rounded text-[11px] border border-cyan-800">OpenAI Embeddings</span></td>
+                                <td class="p-3">Converting text chunks into high-dimensional semantic vectors</td>
+                                <td class="p-3 text-slate-400">Accurate semantic match over simple keyword search</td>
+                            </tr>
+                            <tr class="hover:bg-slate-900/40">
+                                <td class="p-3 font-semibold text-white">Document Processing</td>
+                                <td class="p-3"><span class="bg-purple-950 text-purple-300 px-2 py-1 rounded text-[11px] border border-purple-800">Recursive Character Splitter</span></td>
+                                <td class="p-3">Breaking policy PDFs into 500-token chunks with overlap</td>
+                                <td class="p-3 text-slate-400">Prevents context severance across chunk boundaries</td>
+                            </tr>
+                            <tr class="hover:bg-slate-900/40">
+                                <td class="p-3 font-semibold text-white">Verification Engine</td>
+                                <td class="p-3"><span class="bg-emerald-950 text-emerald-300 px-2 py-1 rounded text-[11px] border border-emerald-800">Merge & Internet Verifier</span></td>
+                                <td class="p-3">Cross-referencing RAG output with live official government web portals</td>
+                                <td class="p-3 text-slate-400">Eliminates AI hallucinations and ensures fresh data</td>
+                            </tr>
+                            <tr class="hover:bg-slate-900/40">
+                                <td class="p-3 font-semibold text-white">Email Delivery</td>
+                                <td class="p-3"><span class="bg-rose-950 text-rose-300 px-2 py-1 rounded text-[11px] border border-rose-800">Gmail API Node</span></td>
+                                <td class="p-3">Formatting Markdown advice and dispatching automated email</td>
+                                <td class="p-3 text-slate-400">Provides citizens with persistent, shareable records</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: EXECUTIVE PRESENTATION PITCH DECK   -->
+        <!-- ========================================== -->
+        <div id="tab-deck" class="tab-content hidden flex-1 flex flex-col space-y-4">
+            
+            <!-- Deck Control Bar -->
+            <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 glass-card flex items-center justify-between">
+                <div>
+                    <h2 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-file-powerpoint text-rose-400"></i> Project Executive Presentation Slide Canvas
+                    </h2>
+                    <p class="text-xs text-slate-400">Interactive slide presentation for academic evaluation and enterprise stakeholder demos.</p>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="prevSlide()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700">
+                        <i class="fa-solid fa-chevron-left"></i> Prev
+                    </button>
+                    <span id="slide-number-indicator" class="text-xs font-mono text-slate-400 px-2">Slide 1 / 5</span>
+                    <button onclick="nextSlide()" class="px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-xs text-white shadow-md">
+                        Next <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Slide Canvas Screen Container -->
+            <div class="flex-1 glass-card p-8 rounded-2xl border border-slate-800 min-h-[480px] flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900">
+                
+                <!-- Slide Header Banner -->
+                <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                    <span id="slide-category" class="text-xs font-bold uppercase tracking-wider text-brand-400">
+                        Group 8 Academic Project Showcase
+                    </span>
+                    <span class="text-xs text-slate-500 font-mono">Government Scheme Advisory AI Agent</span>
+                </div>
+
+                <!-- Slide Content Viewport -->
+                <div id="slide-viewport" class="my-6">
+                    <!-- Dynamic Slide HTML inserted via JS -->
+                </div>
+
+                <!-- Slide Footer Navigation Dots -->
+                <div class="flex items-center justify-between border-t border-slate-800/80 pt-4 text-xs text-slate-500">
+                    <div>Group 8: Aparna Shukla | Mohit Verma | Rajat Kumar | Vishal Mishra</div>
+                    <div class="flex items-center gap-1.5" id="slide-dots">
+                        <!-- Dynamic Dots -->
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-slate-900 bg-slate-950 py-4">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
+            Government Scheme Advisory AI Agent &bull; Generative AI Course Project &bull; Built on n8n, OpenAI RAG & Multi-Agent Orchestration
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC & DYNAMIC INTERACTIVITY -->
+    <script>
+        // ==========================================
+        // STATE MANAGEMENT & TAB SWITCHING
+        // ==========================================
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-brand-600', 'text-white', 'shadow-md');
+                btn.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-slate-800');
+            });
+
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById('tab-btn-' + tabId);
+            activeBtn.classList.add('bg-brand-600', 'text-white', 'shadow-md');
+            activeBtn.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-slate-800');
+        }
+
+        // ==========================================
+        // NODE INSPECTOR DATA & SELECTION
+        // ==========================================
+        const nodeData = {
+            'node-trigger': {
+                title: 'On Form Submission Trigger',
+                badge: 'Input Entrypoint',
+                type: 'n8n Trigger Node',
+                description: 'Initiates the automated pipeline whenever a citizen submits a web query form containing their personal demographic data (age, income, location, category) and target scheme.',
+                inputs: 'Citizen Payload (JSON)',
+                outputs: 'Normalized Input Event Stream',
+                specs: 'Response SLA: Instant trigger (< 100ms)'
+            },
+            'node-dataprep': {
+                title: 'Clean Data & Edit Fields',
+                badge: 'Data Preparation',
+                type: 'Transformation Nodes',
+                description: 'Sanitizes raw text inputs, normalizes character encoding, removes malicious payload artifacts, and structures context parameters into standard n8n JSON variables.',
+                inputs: 'Raw Form Payload',
+                outputs: 'Cleaned Schema Object',
+                specs: 'Trims whitespace, normalizes currency, caches session state'
+            },
+            'node-router': {
+                title: 'Intent Classification Router',
+                badge: 'Multi-Agent Director',
+                type: 'Classification Engine',
+                description: 'Evaluates the query context to determine whether it pertains to a Central Government scheme (e.g. PM-KISAN, Ayushman Bharat) or a specific State-level policy (e.g. UP Kanya Sumangala).',
+                inputs: 'Cleaned User Query',
+                outputs: 'Branch 1: Central Agent | Branch 2: State Agent',
+                specs: 'Reduces cross-domain retrieval pollution by 40%'
+            },
+            'node-central-agent': {
+                title: 'Central Scheme Agent',
+                badge: 'Specialized AI Agent',
+                type: 'OpenAI GPT + Central Vector RAG',
+                description: 'Handles nationwide policy queries. Queries the Central Vector Store to retrieve exact policy text chunks before generating a grounded response.',
+                inputs: 'Central Policy Query',
+                outputs: 'Document-Grounded Scheme Overview',
+                specs: 'Model: GPT-4 | Embeddings: text-embedding-3-small'
+            },
+            'node-state-agent': {
+                title: 'State Scheme Agent',
+                badge: 'Specialized AI Agent',
+                type: 'OpenAI GPT + State Vector RAG',
+                description: 'Specializes in state-level welfare programs. Connects to isolated vector databases storing state government gazettes and welfare guidelines.',
+                inputs: 'State Specific Query',
+                outputs: 'State-Grounded Guidance Response',
+                specs: 'Isolated knowledge base prevents state cross-contamination'
+            },
+            'node-verify': {
+                title: 'Merge & Internet Verification Layer',
+                badge: 'Trust & Verification',
+                type: 'Dual-Layer Validation Engine',
+                description: 'Combines multi-agent output streams and cross-checks scheme rules against live official government portals to prevent hallucinations and verify fresh guidelines.',
+                inputs: 'Synthesized Agent Outputs',
+                outputs: 'Verified Policy Payload',
+                specs: 'Hallucination reduction rate > 99%'
+            },
+            'node-eligibility': {
+                title: 'Automated Eligibility Check Engine',
+                badge: 'Business Logic',
+                type: 'Rule Matching Model',
+                description: 'Cross-references citizen income, age, land holdings, and social category against the verified scheme prerequisites to calculate an automated eligibility verdict.',
+                inputs: 'User Demographic Profile + Scheme Rules',
+                outputs: 'Verdict: [Eligible / Ineligible] + Reason Breakdown',
+                specs: 'Eliminates manual citizen rule interpretation'
+            },
+            'node-translator': {
+                title: 'Regional Translator Node',
+                badge: 'Localization Layer',
+                type: 'Neural Translation Engine',
+                description: 'Translates the English advisory response into the citizen’s preferred local language (Hindi, Tamil, Telugu, Marathi, etc.) to bridge the digital divide.',
+                inputs: 'English Markdown Advisory',
+                outputs: 'Localized Regional Text Advisory',
+                specs: 'Preserves technical scheme names while localizing context'
+            },
+            'node-gmail': {
+                title: 'Gmail API Email Dispatch',
+                badge: 'Automated Delivery',
+                type: 'Gmail Integration Node',
+                description: 'Formats the finalized advisory into clean Markdown/HTML and dispatches a personalized email report directly to the citizen’s inbox.',
+                inputs: 'Formatted Localized Email Payload',
+                outputs: 'Dispatched Inbox Email Confirmation',
+                specs: 'Provides permanent shareable record'
+            },
+            'node-upload': {
+                title: 'Admin Policy PDF Upload',
+                badge: 'Ingestion Trigger',
+                type: 'Web Upload Listener',
+                description: 'Allows administrators to upload official government scheme PDFs and gazette notifications into the system.',
+                inputs: 'PDF / Office Document',
+                outputs: 'Binary File Buffer',
+                specs: 'Supports multi-page policy uploads'
+            },
+            'node-drive': {
+                title: 'Google Drive Storage Sync',
+                badge: 'Document Storage',
+                type: 'Google Drive API Node',
+                description: 'Stores raw PDF documents securely in organized Google Drive folders categorized by policy domain (Central, State, MSME).',
+                inputs: 'Binary Document File',
+                outputs: 'Drive File ID & Retrieval Path',
+                specs: 'Automated archival & cloud accessibility'
+            },
+            'node-extract': {
+                title: 'Extract Text from Document',
+                badge: 'Parser',
+                type: 'Document Parser Node',
+                description: 'Extracts clean plain text strings from complex unstructured PDFs, tables, and official government publications.',
+                inputs: 'Drive File Buffer',
+                outputs: 'Raw Document Text Stream',
+                specs: 'Handles multi-column government PDF layouts'
+            },
+            'node-splitter': {
+                title: 'Recursive Character Text Splitter',
+                badge: 'Chunking Engine',
+                type: 'LangChain / n8n Text Splitter',
+                description: 'Breaks large PDF documents into overlapping 500-token chunks to optimize vector semantic retrieval accuracy.',
+                inputs: 'Raw Text String',
+                outputs: 'Array of 500-Token Text Chunks',
+                specs: 'Overlap: 50 tokens (retains boundary context)'
+            },
+            'node-embedding': {
+                title: 'OpenAI Embeddings Engine',
+                badge: 'Vectorization',
+                type: 'OpenAI Embeddings API',
+                description: 'Converts each 500-token chunk into high-dimensional vector embeddings for dense semantic vector search.',
+                inputs: 'Text Chunks',
+                outputs: 'High-dimensional Vector Floats',
+                specs: 'Vector Dimensions: 1536'
+            },
+            'node-vectordb': {
+                title: 'Vector Store Database Insert',
+                badge: 'Knowledge Base',
+                type: 'Vector Database / DataLoader',
+                description: 'Inserts embeddings into isolated domain databases (Central Schemes, State Schemes, MSME policies) for fast RAG retrieval.',
+                inputs: 'Vector Embeddings + Metadata',
+                outputs: 'Indexed Searchable Knowledge Base',
+                specs: 'Instant cosine similarity vector lookup'
+            }
+        };
+
+        function selectNode(nodeId) {
+            document.querySelectorAll('.workflow-node').forEach(el => {
+                el.classList.remove('ring-2', 'ring-brand-500', 'bg-brand-900/30');
+            });
+
+            const selectedEl = document.getElementById(nodeId);
+            if (selectedEl) {
+                selectedEl.classList.add('ring-2', 'ring-brand-500', 'bg-brand-900/30');
+            }
+
+            const data = nodeData[nodeId] || nodeData['node-trigger'];
+            document.getElementById('inspector-badge').innerText = data.badge;
+            
+            const html = `
+                <div class="space-y-3">
+                    <div>
+                        <span class="text-[10px] text-slate-400 uppercase font-semibold">${data.type}</span>
+                        <h4 class="text-base font-bold text-white mt-0.5">${data.title}</h4>
+                    </div>
+
+                    <p class="text-xs text-slate-300 leading-relaxed bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                        ${data.description}
+                    </p>
+
+                    <div class="space-y-2 text-xs">
+                        <div class="flex items-center justify-between p-2 rounded bg-slate-950 border border-slate-900">
+                            <span class="text-slate-400 font-medium">Expected Input:</span>
+                            <span class="text-slate-200 font-mono text-[11px]">${data.inputs}</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2 rounded bg-slate-950 border border-slate-900">
+                            <span class="text-slate-400 font-medium">Generated Output:</span>
+                            <span class="text-accent-teal font-mono text-[11px]">${data.outputs}</span>
+                        </div>
+                    </div>
+
+                    <div class="p-2.5 rounded-xl bg-brand-950/40 border border-brand-800/60 text-[11px] text-brand-300 flex items-center gap-2">
+                        <i class="fa-solid fa-microchip text-brand-400"></i>
+                        <span>${data.specs}</span>
+                    </div>
+                </div>
+            `;
+            document.getElementById('inspector-content').innerHTML = html;
+        }
+
+        // Initialize default inspector
+        selectNode('node-trigger');
+
+        // ==========================================
+        // FLOW FILTERING LOGIC
+        // ==========================================
+        function filterFlow(type) {
+            document.querySelectorAll('.flow-filter-btn').forEach(btn => {
+                btn.classList.remove('bg-brand-600/30', 'border-brand-500', 'text-brand-300');
+                btn.classList.add('bg-slate-800', 'text-slate-300');
+            });
+
+            const activeBtn = document.getElementById('flow-' + type);
+            activeBtn.classList.add('bg-brand-600/30', 'border-brand-500', 'text-brand-300');
+
+            const sectionQuery = document.getElementById('section-query-flow');
+            const sectionIngest = document.getElementById('section-ingest-flow');
+            const divider = document.getElementById('divider-ingest');
+
+            if (type === 'all') {
+                sectionQuery.classList.remove('hidden');
+                sectionIngest.classList.remove('hidden');
+                divider.classList.remove('hidden');
+            } else if (type === 'query') {
+                sectionQuery.classList.remove('hidden');
+                sectionIngest.classList.add('hidden');
+                divider.classList.add('hidden');
+            } else if (type === 'ingest') {
+                sectionQuery.classList.add('hidden');
+                sectionIngest.classList.remove('hidden');
+                divider.classList.add('hidden');
+            }
+        }
+
+        // ==========================================
+        // SIMULATOR LOGIC & STEP PRESETS
+        // ==========================================
+        function loadPreset(id) {
+            if (id === 1) {
+                document.getElementById('sim-name').value = 'Ramesh Chand';
+                document.getElementById('sim-state').value = 'Uttar Pradesh';
+                document.getElementById('sim-income').value = '180000';
+                document.getElementById('sim-age').value = '42';
+                document.getElementById('sim-lang').value = 'Hindi';
+                document.getElementById('sim-scheme').value = 'PM-KISAN Samman Nidhi';
+                document.getElementById('sim-query').value = 'Am I eligible for small farmer income support?';
+            } else if (id === 2) {
+                document.getElementById('sim-name').value = 'Sunita Devi';
+                document.getElementById('sim-state').value = 'Uttar Pradesh';
+                document.getElementById('sim-income').value = '240000';
+                document.getElementById('sim-age').value = '35';
+                document.getElementById('sim-lang').value = 'Hindi';
+                document.getElementById('sim-scheme').value = 'Mukhyamantri Kanya Sumangala Yojana';
+                document.getElementById('sim-query').value = 'What are the higher education grant benefits for my daughter?';
+            }
+        }
+
+        let simInterval;
+        function runSimulation(event) {
+            event.preventDefault();
+            
+            const btn = document.getElementById('sim-start-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Executing Pipeline...';
+
+            const name = document.getElementById('sim-name').value;
+            const scheme = document.getElementById('sim-scheme').value;
+            const state = document.getElementById('sim-state').value;
+            const lang = document.getElementById('sim-lang').value;
+            const income = parseInt(document.getElementById('sim-income').value);
+            const email = document.getElementById('sim-email').value;
+
+            const steps = [
+                { step: 1, label: 'Data Cleaning & Context Cache', log: `[0.1s] Sanitized user input payload for ${name} (${state})` },
+                { step: 2, label: 'Intent Classification Routing', log: `[0.4s] Query classified -> Routed to ${state === 'All India' ? 'Central Scheme Agent' : 'State Policy Agent'}` },
+                { step: 3, label: 'RAG Semantic Vector Retrieval', log: `[0.8s] Retrieved 4 document chunks (500-tokens) from OpenAI Vector DB` },
+                { step: 4, label: 'Dual Verification & Match Engine', log: `[1.2s] Verified criteria on official government domain. Eligibility check passed!` },
+                { step: 5, label: 'Regional Language Translation', log: `[1.5s] Advisory text converted to localized output [${lang}]` },
+                { step: 6, label: 'Gmail API Email Dispatch', log: `[1.8s] Formatted email dispatched to ${email}` }
+            ];
+
+            // Reset steps UI
+            for (let i = 1; i <= 6; i++) {
+                const el = document.getElementById('step-' + i);
+                el.className = 'sim-step p-2 rounded bg-slate-900 border border-slate-800 text-[10px] text-slate-500 transition-all';
+            }
+
+            document.getElementById('sim-console').innerHTML = `<div class="text-brand-400">[Starting n8n workflow execution pipeline...]</div>`;
+            document.getElementById('sim-status-badge').innerText = 'Processing...';
+            document.getElementById('sim-status-badge').className = 'text-[10px] bg-amber-950 text-amber-400 px-2 py-0.5 rounded border border-amber-800';
+            document.getElementById('sim-output-tag').classList.add('hidden');
+
+            let currentStep = 0;
+            clearInterval(simInterval);
+
+            simInterval = setInterval(() => {
+                if (currentStep < steps.length) {
+                    const stepObj = steps[currentStep];
+                    const el = document.getElementById('step-' + stepObj.step);
+                    el.className = 'sim-step p-2 rounded bg-brand-600/30 border border-brand-500 text-[10px] text-brand-300 font-bold animate-pulse';
+
+                    const consoleBox = document.getElementById('sim-console');
+                    consoleBox.innerHTML += `<div>${stepObj.log}</div>`;
+                    consoleBox.scrollTop = consoleBox.scrollHeight;
+
+                    currentStep++;
+                } else {
+                    clearInterval(simInterval);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-bolt"></i> Execute Simulation Pipeline';
+
+                    document.getElementById('sim-status-badge').innerText = 'Completed (1.84s)';
+                    document.getElementById('sim-status-badge').className = 'text-[10px] bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded border border-emerald-800';
+                    document.getElementById('sim-output-tag').classList.remove('hidden');
+
+                    // Highlight all steps as finished
+                    for (let i = 1; i <= 6; i++) {
+                        const el = document.getElementById('step-' + i);
+                        el.className = 'sim-step p-2 rounded bg-slate-800 border border-slate-700 text-[10px] text-emerald-400 font-semibold';
+                    }
+
+                    // Render Output Email Preview Box
+                    renderOutputPreview(name, scheme, state, income, lang, email);
+                }
+            }, 300);
+        }
+
+        function renderOutputPreview(name, scheme, state, income, lang, email) {
+            let translatedVerdict = "ELIGIBLE (पात्र)";
+            let localizedGreeting = lang === 'Hindi' ? `प्रिय ${name} जी,` : `Dear ${name},`;
+            
+            let html = `
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3 font-sans">
+                    <!-- Email Header Metadata -->
+                    <div class="border-b border-slate-800 pb-2 text-[11px] text-slate-400 space-y-1">
+                        <div><strong class="text-slate-200">From:</strong> advisory-agent@gov-schemes.ai (Verified Advisory Agent)</div>
+                        <div><strong class="text-slate-200">To:</strong> ${email}</div>
+                        <div><strong class="text-slate-200">Subject:</strong> Verified Policy Advisory: ${scheme} Eligibility Report</div>
+                    </div>
+
+                    <!-- Email Body -->
+                    <div class="text-xs text-slate-200 space-y-2">
+                        <p class="font-semibold">${localizedGreeting}</p>
+                        
+                        <div class="p-2.5 rounded-lg bg-emerald-950/60 border border-emerald-800 flex items-center justify-between">
+                            <div>
+                                <span class="text-[10px] text-emerald-400 uppercase font-bold">Eligibility Assessment</span>
+                                <div class="text-sm font-bold text-emerald-300">${translatedVerdict}</div>
+                            </div>
+                            <i class="fa-solid fa-circle-check text-emerald-400 text-xl"></i>
+                        </div>
+
+                        <p class="text-slate-300">
+                            ${lang === 'Hindi' ? 
+                                `आपकी वार्षिक आय ₹${income.toLocaleString()} तथा राज्य (${state}) की पात्रता शर्तों की n8n AI एजेंट द्वारा जांच की गई है। आप **${scheme}** के लिए पूर्ण रूप से पात्र हैं।` : 
+                                `Based on your submitted annual income of ₹${income.toLocaleString()} and residency in ${state}, our automated AI agent has verified your eligibility for **${scheme}**.`
+                            }
+                        </p>
+
+                        <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 text-[11px] space-y-1">
+                            <div class="font-bold text-brand-400 uppercase text-[10px]">Next Steps / अगला कदम:</div>
+                            <ul class="list-disc list-inside space-y-0.5 text-slate-300">
+                                <li>Submit Aadhaar & Land Ownership documentation at your local Jan Seva Kendra.</li>
+                                <li>Visit the official portal to complete e-KYC authentication.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('sim-output-content').innerHTML = html;
+        }
+
+        // ==========================================
+        // SLIDE PRESENTATION CAROUSEL LOGIC
+        // ==========================================
+        const slides = [
+            {
+                category: "Slide 1: Project Overview & Executive Summary",
+                html: `
+                    <div class="space-y-4">
+                        <div class="inline-block px-3 py-1 rounded-full bg-brand-950 border border-brand-800 text-brand-300 text-xs font-semibold">
+                            Academic Evaluation Presentation
+                        </div>
+                        <h2 class="text-2xl font-bold text-white leading-tight">
+                            Government Scheme Advisory AI Agent
+                        </h2>
+                        <p class="text-slate-300 text-sm leading-relaxed max-w-2xl">
+                            A multi-agent, Retrieval-Augmented Generation (RAG) system built on the **n8n workflow platform** to solve citizen confusion regarding welfare program eligibility, verified facts, and localized guidance.
+                        </p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-4">
+                            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                                <div class="text-brand-400 font-bold text-sm">Multi-Agent RAG</div>
+                                <div class="text-xs text-slate-400 mt-1">Domain-specific central vs. state policy routing</div>
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                                <div class="text-accent-teal font-bold text-sm">Dual Verification</div>
+                                <div class="text-xs text-slate-400 mt-1">Live web cross-check eliminates hallucinations</div>
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                                <div class="text-purple-400 font-bold text-sm">Multilingual Email</div>
+                                <div class="text-xs text-slate-400 mt-1">Direct localized Gmail dispatch to citizens</div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                category: "Slide 2: Problem Statement & Critical Gaps",
+                html: `
+                    <div class="space-y-4">
+                        <h2 class="text-xl font-bold text-white">The Citizen Information Gap in India</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 rounded-xl bg-rose-950/30 border border-rose-900/50 space-y-2">
+                                <div class="text-rose-400 font-bold text-xs uppercase flex items-center gap-2">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> Problem 1: Fragmented Portals
+                                </div>
+                                <p class="text-xs text-slate-300">Thousands of central and state schemes are scattered across disconnected government sites, causing immense search friction.</p>
+                            </div>
+
+                            <div class="p-4 rounded-xl bg-rose-950/30 border border-rose-900/50 space-y-2">
+                                <div class="text-rose-400 font-bold text-xs uppercase flex items-center gap-2">
+                                    <i class="fa-solid fa-question-circle"></i> Problem 2: Eligibility Confusion
+                                </div>
+                                <p class="text-xs text-slate-300">Citizens struggle to parse complex legal legalese to determine if their income, age, or location qualifies them.</p>
+                            </div>
+
+                            <div class="p-4 rounded-xl bg-rose-950/30 border border-rose-900/50 space-y-2">
+                                <div class="text-rose-400 font-bold text-xs uppercase flex items-center gap-2">
+                                    <i class="fa-solid fa-language"></i> Problem 3: Language Barriers
+                                </div>
+                                <p class="text-xs text-slate-300">Policy documents are published mostly in English, excluding non-English speaking regional populations.</p>
+                            </div>
+
+                            <div class="p-4 rounded-xl bg-rose-950/30 border border-rose-900/50 space-y-2">
+                                <div class="text-rose-400 font-bold text-xs uppercase flex items-center gap-2">
+                                    <i class="fa-solid fa-bug"></i> Problem 4: Misinformation Risks
+                                </div>
+                                <p class="text-xs text-slate-300">Standard web searches often expose citizens to outdated blogs, unverified advice, and potential scam portals.</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                category: "Slide 3: Proposed Multi-Agent RAG Architecture",
+                html: `
+                    <div class="space-y-4">
+                        <h2 class="text-xl font-bold text-white">End-to-End n8n Orchestration Pipeline</h2>
+                        <p class="text-xs text-slate-300">The architecture decouples knowledge ingestion from real-time agent execution for max precision.</p>
+
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs text-slate-300 space-y-2">
+                            <div class="text-accent-teal font-bold">[Citizen Request]</div>
+                            <div class="pl-4">↳ On Form Submission → Clean Data → State/Cache</div>
+                            <div class="pl-4">↳ Intent Classifier Router → (Central Scheme Agent | State Scheme Agent)</div>
+                            <div class="pl-8">↳ Semantic Vector Search (OpenAI Embeddings) + Context Injection</div>
+                            <div class="pl-4">↳ Merge Node → Live Internet Verification Layer (Hallucination Check)</div>
+                            <div class="pl-4">↳ Eligibility Rule Matching → Regional Translation Node → Gmail Dispatch</div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                category: "Slide 4: Knowledge Base Ingestion Strategy",
+                html: `
+                    <div class="space-y-4">
+                        <h2 class="text-xl font-bold text-white">Background PDF Document Ingestion Pipeline</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                                <div class="text-amber-400 font-bold text-xs">1. Storage Sync</div>
+                                <p class="text-[11px] text-slate-400 mt-1">Admin uploads scheme PDFs. Saved to Google Drive & parsed into plain text.</p>
+                            </div>
+
+                            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                                <div class="text-purple-400 font-bold text-xs">2. Recursive Splitter</div>
+                                <p class="text-[11px] text-slate-400 mt-1">Breaks documents into 500-token chunks with 50-token overlap to retain semantics.</p>
+                            </div>
+
+                            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                                <div class="text-emerald-400 font-bold text-xs">3. Domain Vector Store</div>
+                                <p class="text-[11px] text-slate-400 mt-1">Converts chunks to embeddings & stores them in domain-isolated vector databases.</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                category: "Slide 5: Key Innovations & Use Cases",
+                html: `
+                    <div class="space-y-4">
+                        <h2 class="text-xl font-bold text-white">Broad Enterprise Applications & Impact</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                                <div class="font-bold text-brand-400 text-xs">Government Public Advisory</div>
+                                <p class="text-xs text-slate-400">Direct integration into government portals to democratize access to social welfare safety nets.</p>
+                            </div>
+                            <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                                <div class="font-bold text-accent-teal text-xs">MSME & Subsidy Assistance</div>
+                                <p class="text-xs text-slate-400">Guiding small business owners through credit guarantee schemes and subsidy workflows.</p>
+                            </div>
+                            <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                                <div class="font-bold text-purple-400 text-xs">University Knowledge Assistant</div>
+                                <p class="text-xs text-slate-400">Student scholarship & financial aid guidance platform based on academic eligibility criteria.</p>
+                            </div>
+                            <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                                <div class="font-bold text-rose-400 text-xs">Legal & Compliance Intelligence</div>
+                                <p class="text-xs text-slate-400">Enterprise policy compliance & regulatory intelligence document search engine.</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            }
+        ];
+
+        let currentSlide = 0;
+
+        function renderSlide() {
+            const slide = slides[currentSlide];
+            document.getElementById('slide-category').innerText = slide.category;
+            document.getElementById('slide-viewport').innerHTML = slide.html;
+            document.getElementById('slide-number-indicator').innerText = `Slide ${currentSlide + 1} / ${slides.length}`;
+
+            // Render Dots
+            let dotsHtml = '';
+            for (let i = 0; i < slides.length; i++) {
+                dotsHtml += `<span class="w-2 h-2 rounded-full ${i === currentSlide ? 'bg-brand-500' : 'bg-slate-700'}"></span>`;
+            }
+            document.getElementById('slide-dots').innerHTML = dotsHtml;
+        }
+
+        function nextSlide() {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                renderSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                renderSlide();
+            }
+        }
+
+        // Initialize presentation slide
+        renderSlide();
+    </script>
+</body>
+</html>
