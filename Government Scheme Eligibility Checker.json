@@ -1,0 +1,1840 @@
+{
+  "name": "Gen AI Project",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Scheme Buddy | Know Your Scheme",
+        "formDescription": "Get valid information about all the government schemes.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name",
+              "placeholder": "Enter your name"
+            },
+            {
+              "fieldLabel": "Age",
+              "fieldType": "number",
+              "placeholder": "Enter your age"
+            },
+            {
+              "fieldLabel": "Email ",
+              "fieldType": "email",
+              "placeholder": "Enter your email"
+            },
+            {
+              "fieldLabel": "Dcomicile State",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Bihar"
+                  },
+                  {
+                    "option": "Assam "
+                  },
+                  {
+                    "option": "Uttar Pradesh "
+                  },
+                  {
+                    "option": "Rajasthan"
+                  },
+                  {
+                    "option": "Tamil Nadu"
+                  },
+                  {
+                    "option": "Telangana"
+                  },
+                  {
+                    "option": "Manipur"
+                  },
+                  {
+                    "option": "Jammu & Kashmir"
+                  },
+                  {
+                    "option": "Delhi"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Annual Family Income",
+              "fieldType": "number",
+              "placeholder": "Enter your family annual income"
+            },
+            {
+              "fieldLabel": "Category",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "General"
+                  },
+                  {
+                    "option": "OBC"
+                  },
+                  {
+                    "option": "SC"
+                  },
+                  {
+                    "option": "ST"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Any Disability",
+              "fieldType": "radio",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Yes "
+                  },
+                  {
+                    "option": "No"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Economically Weaker Section",
+              "fieldType": "radio",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Yes"
+                  },
+                  {
+                    "option": "No"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Scheme You Want To Know About",
+              "placeholder": "Enter the name of the scheme you want to know about"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ec3d0e51-4a50-48dd-bf58-76d51c2ad30e",
+      "name": "On form submission",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        928,
+        544
+      ],
+      "webhookId": "97c7b240-8391-46e9-ab5b-46e24d461180"
+    },
+    {
+      "parameters": {
+        "instructions": "Act as a security expert and do the following:\n1)Check all the input data and perform sanitization of the data\nRules for sanitization: remove special characters in all the inputs of string type expect email and redundant spacings\n2)Remove all the redundant and malicious data for each of the fields entered \n3)Provide a clean data set that is good to go in the system",
+        "codeGeneratedForPrompt": "Act as a security expert and do the following:\n1)Check all the input data and perform sanitization of the data\nRules for sanitization: remove special characters in all the inputs of string type expect email and redundant spacings\n2)Remove all the redundant and malicious data for each of the fields entered \n3)Provide a clean data set that is good to go in the system",
+        "jsCode": "const sanitizeString = (str) => {\n  return str\n    .replace(/[^\\w\\s]/gi, \"\")\n    .replace(/\\s+/g, \" \")\n    .trim();\n};\n\nconst items = $input.all();\nconst sanitizedItems = items.map((item) => {\n  const cleanedData = {};\n  for (const key in item.json) {\n    if (typeof item.json[key] === \"string\" && key !== \"Email \") {\n      cleanedData[key] = sanitizeString(item.json[key]);\n    } else {\n      cleanedData[key] = item.json[key];\n    }\n  }\n  return { json: cleanedData };\n});\n\nreturn sanitizedItems;\n"
+      },
+      "id": "9074981a-bcfe-4675-aad5-a162d849df9f",
+      "name": "Clean Data",
+      "type": "n8n-nodes-base.aiTransform",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Tell me if the given scheme is state-government sponsored/run or central-government sponsored/run in India.\nScheme: {{ $json['Scheme You Want To Know About'] }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an Indian government policy expert that has knowledge of all the schemes run either by state-government or by central government. \nYour task is to search about the scheme being queried and return a single word output as \"STATE\" or \"CENTRAL\""
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "9f8456ad-81c7-404f-975e-cb5644f70e84",
+      "name": "Find Out State or Central",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1344,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "55454d4f-83e6-4f4c-bcd0-70cc8bb12b5c",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1392,
+        704
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "689d4a60-effa-4681-8ce7-d850efbf1ee5",
+              "leftValue": "={{ $json.text }}",
+              "rightValue": "CENTRAL",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "cc7097a7-a919-4059-8a20-0dd0a7415126",
+      "name": "State or Central",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1696,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=I want to know about the scheme  {{ $('Clean Data').item.json['Scheme You Want To Know About'] }}. \nGive me a detailed overview of the scheme that contains: \n- what the scheme is all about?\n- who all are eligible for the scheme? \n- how can one apply for the scheme?\n- what are the benefits of the scheme?",
+        "options": {
+          "systemMessage": "Core Rules:\nAnswer strictly from the uploaded PDFs/documents.\nIf information is not available in the documents, say:\n“The provided documents do not contain sufficient information on this topic.”\nDo not hallucinate, infer, or fabricate details.\nDo not provide political opinions or interpretations.\nStay factual, neutral, and concise.\n\n\nResponse Style:\nUse this structure whenever applicable:\nOverview\nKey Features\nEligibility\nBenefits\nImplementation/Process\nImportant Notes or Updates\n\n\nBehavior Guidelines:\nQuote or summarize only from the provided knowledge base.\nIf multiple documents contain relevant information, combine them clearly.\nPrefer bullet points and short paragraphs.\nSimplify complex policy/legal language into easy English.\nMention document names/sections if available.\n\n\nRestrictions:\nNo external references.\nNo assumptions.\nNo legal or financial advice.\nNo answering beyond the uploaded material.\n\nYour goal is to act as a reliable policy document assistant with high factual accuracy and zero hallucination.\n\n## TOOLS\nUse the \"Central Data Policy Tool\" for knowledge retrieval and scheme or policy information\n"
+        }
+      },
+      "id": "3dc3c96d-4fba-410d-a6c6-306f3703a790",
+      "name": "Central Scheme Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1984,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "52bb68dc-72c7-43da-8a9a-56ee92bb63fa",
+      "name": "OpenAI Chat Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1872,
+        256
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Call this tool to search central government policies and schemes that user queried about",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "centralknowledgebase",
+          "mode": "list",
+          "cachedResultName": "centralknowledgebase"
+        },
+        "options": {
+          "pineconeNamespace": "Government Central Scheme"
+        }
+      },
+      "id": "675ce8d8-c58a-4f5e-a6e2-20071b248579",
+      "name": "Central Data Policy Tool",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        2128,
+        256
+      ],
+      "credentials": {
+        "pineconeApi": {
+          "id": "v1Ln19jGccGfwP2I",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "0d7a7114-26e5-42ba-be8b-1173b3b20aeb",
+      "name": "Embeddings OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2192,
+        64
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "1113237e-3ee2-40a2-8f77-30c213a82850",
+      "name": "No Operation, do nothing",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2464,
+        592
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=My name is  {{ $('Clean Data').item.json.Name }} a resident of {{ $('Clean Data').item.json['Dcomicile State'] }},category {{ $('Clean Data').item.json.Category }}, age {{ $('Clean Data').item.json.Age }}, annual family income{{ $('Clean Data').item.json['Annual Family Income'] }}. \nDo I have disablity? {{ $('Clean Data').item.json['Any Disability'] }} Am I economically weaker? {{ $('Clean Data').item.json['Economically Weaker Section'] }}\nI want to know about the scheme {{ $('Clean Data').item.json['Scheme You Want To Know About'] }}"
+            }
+          ]
+        },
+        "builtInTools": {
+          "webSearch": {
+            "searchContextSize": "medium"
+          }
+        },
+        "options": {
+          "instructions": "You are PolicySaarthi, an AI assistant specialized in Indian Government central policies, schemes, regulations, and official notifications.\n\nYour PRIMARY source of knowledge is  the web ONLY from official government sources when required.\n\nAllowed Sources\n\nYou are allowed to use information ONLY from:\n\nGovernment ministry websites\nPIB\nMyGov\nIndia.gov.in\nRBI\nSEBI\nNITI Aayog\nGazette notifications\nOfficial government portals\nOfficial scheme websites\n\nExamples:\n\n.gov.in\npib.gov.in\nrbi.org.in\nsebi.gov.in\nniti.gov.in\n\nStrict Restrictions:\nDo NOT use news articles, blogs, forums, Wikipedia, social media, or private websites.\nDo NOT use unofficial summaries or interpretations.\nDo NOT hallucinate or assume missing information.\nIf information is unavailable in the uploaded documents or official sources, clearly say:\n“No verified information was found in the provided documents or official government sources.”\nResponse Style\n\nUse concise and structured responses:\nOverview\nKey Features\nEligibility\nBenefits\nProcess/Implementation\nOfficial Update/Reference (if available)\n\nBehavior Guidelines:\nPrioritize uploaded PDFs over web information.\nClearly separate:\nInformation from uploaded documents\nInformation from official government websites\nSimplify policy/legal language into easy English.\nStay factual, neutral, and professional.\n\nSafety Rules:\nNo political opinions or bias.\nNo legal or financial advice.\nNo speculative interpretation.\nNever generate information beyond verified sources.\n\nYour goal is to act as a highly reliable Indian policy assistant with strict source control and zero hallucination."
+        }
+      },
+      "id": "86cff4b3-d5d2-4f47-89ec-699ce25dd4b0",
+      "name": "Verifier",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        2672,
+        592
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "instructions": "Remove all the '#' and '*' from the text output[0].content[0].text",
+        "codeGeneratedForPrompt": "Remove all the '#' and '*' from the text output[0].content[0].text",
+        "jsCode": "const items = $input.all();\nconst updatedItems = items.map((item) => {\n  item.json.output[0].content[0].text =\n    item.json.output[0].content[0].text.replace(/[#*]/g, \"\");\n  return item;\n});\nreturn updatedItems;\n"
+      },
+      "id": "715f5ece-7f4d-4d93-a175-062c3c532369",
+      "name": "AI Transform",
+      "type": "n8n-nodes-base.aiTransform",
+      "typeVersion": 1,
+      "position": [
+        3168,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Based on the data {{ $json.output[0].content[0].text }} and given my profile\nAge: {{ $('Clean Data').item.json.Age }}\nState: {{ $('Clean Data').item.json['Dcomicile State'] }}\nCategory: {{ $('Clean Data').item.json.Category }}\nDisability: {{ $('Clean Data').item.json['Any Disability'] }}\nEconomically Weaker: {{ $('Clean Data').item.json['Economically Weaker Section'] }}\nAnnual Family Income: {{ $('Clean Data').item.json['Annual Family Income'] }}\n\nAm I eliglible for the scheme, give me a one line response as yes/no",
+        "batching": {}
+      },
+      "id": "01f39f61-5d37-491e-9229-df7f0b23b477",
+      "name": "Eligibility Checker",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        3024,
+        592
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "c29038d5-9555-46f8-aae0-399c6866cebd",
+      "name": "OpenAI Chat Model3",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2960,
+        800
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=Based on the local language of my state  {{ $('Clean Data').item.json['Dcomicile State'] }}  translate the output {{ $('AI Transform').item.json.output[0].content[0].text }} into that particular language."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "ba1c4660-4baa-42a9-8766-27ff74d371ff",
+      "name": "Translator",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        3376,
+        592
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "pUQLfQa5OTgkTC1K",
+          "mode": "list",
+          "cachedResultName": "Gen AI Project",
+          "cachedResultUrl": "/projects/bS734x5H9kKsnAyI/datatables/pUQLfQa5OTgkTC1K"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $('Clean Data').item.json.Name }}",
+            "Email": "={{ $('Clean Data').item.json['Email '] }}",
+            "Age": "={{ $('Clean Data').item.json.Age }}",
+            "State": "={{ $('Clean Data').item.json['Dcomicile State'] }}",
+            "Category": "={{ $('Clean Data').item.json.Category }}",
+            "AnnualIncome": "={{ $('Clean Data').item.json['Annual Family Income'] }}",
+            "EWS": "={{ $('Clean Data').item.json['Economically Weaker Section'] }}",
+            "Diability": "={{ $('Clean Data').item.json['Any Disability'] }}",
+            "Program": "={{ $('Clean Data').item.json['Scheme You Want To Know About'] }}",
+            "Eligible": "={{ $('Eligibility Checker').item.json.text }}",
+            "OverviewEnglish": "={{ $('AI Transform').item.json.output[0].content[0].text }}",
+            "OverviewLocal": "={{ $json.output[0].content[0].text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Age",
+              "displayName": "Age",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "State",
+              "displayName": "State",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "AnnualIncome",
+              "displayName": "AnnualIncome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "EWS",
+              "displayName": "EWS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Diability",
+              "displayName": "Diability",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Program",
+              "displayName": "Program",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Eligible",
+              "displayName": "Eligible",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "OverviewEnglish",
+              "displayName": "OverviewEnglish",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "OverviewLocal",
+              "displayName": "OverviewLocal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "aa02dce6-0774-457b-b3f4-e03c716b4076",
+      "name": "Update Data in Table",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        3728,
+        592
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "markdownToHtml",
+        "markdown": "={{ $json.OverviewEnglish }}\n{{ $json.OverviewLocal }}",
+        "options": {}
+      },
+      "id": "093e7306-86a4-41fd-a176-7198acb234df",
+      "name": "Markdown",
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        3936,
+        592
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Beautify the HTML below using inline CSS styling for an email. Format it like a modern newsletter. Output only the results without any header element."
+            },
+            {
+              "content": "={{ $json.data }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "49d64a06-54d8-401c-8732-66db7a448095",
+      "name": "Message a model",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        4240,
+        688
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Update Data in Table').item.json.Email }}",
+        "subject": "=Update on {{ $('Update Data in Table').item.json.Program }} Scheme",
+        "message": "={{ $json.output[0].content[0].text }}\n<h3 style=\"text-align: center;color:#007BFF;\">Eligible: {{ $('Update Data in Table').item.json.Eligible }}</h3>",
+        "options": {}
+      },
+      "id": "962b761f-3b6e-463f-a3e6-1f86d01fab0f",
+      "name": "Send a message",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        4592,
+        688
+      ],
+      "webhookId": "bb591ade-3699-41f6-83b8-066d8a624784",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "izE9Y02CTYaSDFGL",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=I want to know about the scheme  {{ $('Clean Data').item.json['Scheme You Want To Know About'] }} of {{ $('Clean Data').item.json['Dcomicile State'] }}. \nGive me a detailed overview of the scheme that contains: \n- what the scheme is all about?\n- who all are eligible for the scheme? \n- how can one apply for the scheme?\n- what are the benefits of the scheme?",
+        "options": {
+          "systemMessage": "You are Policy Saarthi, an AI assistant specialized in Indian State Government central policies and schemes.\n\nYour ONLY source of knowledge, provided to you in the knowledge base, that you can extract from the tool \"State Data Policy Tool\"\nDo NOT use external knowledge, assumptions, internet information, or prior training knowledge beyond the uploaded documents.\n\nCore Rules:\nAnswer strictly from the uploaded PDFs/documents.\nIf information is not available in the documents, say:\n“The provided documents do not contain sufficient information on this topic.”\nDo not hallucinate, infer, or fabricate details.\nDo not provide political opinions or interpretations.\nStay factual, neutral, and concise.\n\n\nResponse Style:\nUse this structure whenever applicable:\nOverview\nKey Features\nEligibility\nBenefits\nImplementation/Process\nImportant Notes or Updates\n\n\nBehavior Guidelines:\nQuote or summarize only from the provided knowledge base.\nIf multiple documents contain relevant information, combine them clearly.\nPrefer bullet points and short paragraphs.\nSimplify complex policy/legal language into easy English.\nMention document names/sections if available.\n\n\nRestrictions:\nNo external references.\nNo assumptions.\nNo legal or financial advice.\nNo answering beyond the uploaded material.\n\nYour goal is to act as a reliable policy document assistant with high factual accuracy and zero hallucination.\n\n## TOOLS\nUse the \"State Data Policy Tool\" for knowledge retrieval and scheme or policy information"
+        }
+      },
+      "id": "d1077f6e-09e5-4340-940b-99f61a73fc38",
+      "name": "State Scheme Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1984,
+        752
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "b9328252-01ff-414b-9f73-920325d6ff17",
+      "name": "OpenAI Chat Model2",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1856,
+        960
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Call this tool to search state government policies and schemes that user queried about",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "stateknowledgebase",
+          "mode": "list",
+          "cachedResultName": "stateknowledgebase"
+        },
+        "options": {
+          "pineconeNamespace": "Government State Scheme"
+        }
+      },
+      "id": "065d9e35-399b-4d5e-b0a3-407e8cceac80",
+      "name": "State Data Policy Tool",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        2128,
+        976
+      ],
+      "credentials": {
+        "pineconeApi": {
+          "id": "v1Ln19jGccGfwP2I",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "9b3c8b89-2778-4e87-a4a7-b3c5f5412997",
+      "name": "Embeddings OpenAI1",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2032,
+        1104
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "Upload Central Government Scheme File",
+        "formDescription": "Update Memory Base of Agent",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Upload a File",
+              "fieldType": "file"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e8ce1826-ede1-4b04-8c3c-7c4ba4fb09cc",
+      "name": "Central Scheme Doc Upload",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        2832,
+        1312
+      ],
+      "webhookId": "1f800672-5e2e-48a8-a05c-815b8828230c"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "centralknowledgebase",
+          "mode": "list",
+          "cachedResultName": "centralknowledgebase"
+        },
+        "embeddingBatchSize": 300,
+        "options": {
+          "pineconeNamespace": "Government Central Scheme"
+        }
+      },
+      "id": "0dfeaa0e-00bf-47c8-acd2-da0e036b6c4c",
+      "name": "Central Document Uploader",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        3056,
+        1312
+      ],
+      "credentials": {
+        "pineconeApi": {
+          "id": "v1Ln19jGccGfwP2I",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "4af51345-f3e5-467a-b40c-2b50e6d84ab8",
+      "name": "Embeddings OpenAI2",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2480,
+        1632
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "id": "124a86e4-4759-40e1-95ee-e2f040befbe1",
+      "name": "Default Data Loader1",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        2752,
+        1568
+      ]
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 200,
+        "options": {}
+      },
+      "id": "450f1e32-9499-44c5-bd52-efae487476cd",
+      "name": "Recursive Character Text Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        2944,
+        1696
+      ]
+    },
+    {
+      "parameters": {
+        "formTitle": "Upload State Government Scheme File",
+        "formDescription": "update state government scheme files",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Upload Scheme File",
+              "fieldType": "file"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "45ff1154-687e-42b6-b864-2c90fae9a797",
+      "name": "State Scheme Document Uplaod",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        2912,
+        1920
+      ],
+      "webhookId": "7e56c623-685e-4407-b0f2-92998f82cbda"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "stateknowledgebase",
+          "mode": "list",
+          "cachedResultName": "stateknowledgebase"
+        },
+        "options": {
+          "pineconeNamespace": "Government State Scheme"
+        }
+      },
+      "id": "e5c0549f-a3fe-4a24-b1b2-ea7c15ce7d4a",
+      "name": "State Document Uploader",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        3136,
+        1920
+      ],
+      "credentials": {
+        "pineconeApi": {
+          "id": "v1Ln19jGccGfwP2I",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "c40aef27-a6b8-4341-8c1f-9476a6017894",
+      "name": "Embeddings OpenAI3",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        3072,
+        2192
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "id": "7156d195-bc59-47ef-ab9b-8ed8e6e0ddc0",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        3280,
+        2192
+      ]
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 200,
+        "options": {}
+      },
+      "id": "d294f0dd-16b5-4fad-bba6-87e243edeaed",
+      "name": "Recursive Character Text Splitter1",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        3360,
+        2336
+      ]
+    },
+    {
+      "parameters": {
+        "public": true,
+        "options": {
+          "responseMode": "responseNodes"
+        }
+      },
+      "id": "5d3f8670-efda-4fc1-bac8-40e731ae3f3c",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        16
+      ],
+      "webhookId": "9e4e491e-b268-4452-9a3c-8819de8a358c"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "ba12da22-a62a-49f2-a880-9cbf8878f351",
+      "name": "Question and Answer Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainRetrievalQa",
+      "typeVersion": 1.7,
+      "position": [
+        288,
+        0
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "44116ca4-ac96-4731-90b6-8db0a561cb4d",
+      "name": "OpenAI Chat Model4",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        304,
+        160
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "eae41c9b-1851-4e18-b32d-20abe6995d44",
+      "name": "Vector Store Retriever",
+      "type": "@n8n/n8n-nodes-langchain.retrieverVectorStore",
+      "typeVersion": 1,
+      "position": [
+        480,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "centralknowledgebase",
+          "mode": "list",
+          "cachedResultName": "centralknowledgebase"
+        },
+        "options": {}
+      },
+      "id": "3eac52d8-91c9-479a-9a68-93ca19ca2cdb",
+      "name": "Pinecone Vector Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        528,
+        240
+      ],
+      "credentials": {
+        "pineconeApi": {
+          "id": "v1Ln19jGccGfwP2I",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "c745899c-b784-4922-a96a-53de8922f31f",
+      "name": "Embeddings OpenAI4",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        400,
+        320
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "message": "={{ $json.response }}",
+        "options": {}
+      },
+      "id": "6f8e4cfc-ca34-4f53-b81a-7895313c7fea",
+      "name": "Chat",
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1.3,
+      "position": [
+        640,
+        0
+      ],
+      "webhookId": "34c62d65-050a-4889-a889-43cfda23bc10"
+    },
+    {
+      "parameters": {
+        "formTitle": "Load State Schemes",
+        "formDescription": "Run to upload all the state file schemes",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Execute the Workflow",
+              "fieldType": "radio",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Run"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2194f9ef-7cc6-4b42-a28b-19d3ae356328",
+      "name": "Click to upload state scheme files",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        1392,
+        1872
+      ],
+      "webhookId": "efa83e76-054b-4dde-a2a8-b1f604ce6f51"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "1Tc013JEOw-zOs1ijkEzeInYOv4UpJqgJ",
+            "mode": "list",
+            "cachedResultName": "State Schemes",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1Tc013JEOw-zOs1ijkEzeInYOv4UpJqgJ"
+          }
+        },
+        "options": {}
+      },
+      "id": "934be76d-fd0b-443f-8276-8c467c09041c",
+      "name": "Search for State Scheme Files",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2000,
+        1872
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "frW5pPTaslr7vyQa",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "efbd2889-8499-4893-b8f1-89b30da707cf",
+      "name": "Download Files1",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2208,
+        1872
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "frW5pPTaslr7vyQa",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "2f51f539-51d5-4762-906d-15463c6ca63e",
+      "name": "Extract from File1",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        2624,
+        1888
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "a748d7b7-ee46-4d9f-827c-84773b21bb66",
+      "name": "Loop Over Items1",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2416,
+        1872
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "4af0f853-0238-4eaa-8874-751bdf9786bd",
+      "name": "Click to upload central scheme files",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        1344
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "returnAll": true,
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "1mlaCTPIo2lhtOFhO8NMLl6jeaXkpS7Wp",
+            "mode": "list",
+            "cachedResultName": "Central Schemes",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1mlaCTPIo2lhtOFhO8NMLl6jeaXkpS7Wp"
+          }
+        },
+        "options": {}
+      },
+      "id": "a24f49c4-ba16-46a7-92f2-5292cf2dfa6d",
+      "name": "Search For Central Scheme Files",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1984,
+        1344
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "frW5pPTaslr7vyQa",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "ab1a4706-8344-4634-8f04-f78dda7a78e1",
+      "name": "Download Files",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2192,
+        1344
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "frW5pPTaslr7vyQa",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "6ab36218-412b-42bd-b89c-b94c29530925",
+      "name": "Extract from File",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        2624,
+        1360
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "5ea971fe-90ea-4497-87a9-e049efc54929",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2400,
+        1344
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Clean Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Data": {
+      "main": [
+        [
+          {
+            "node": "Find Out State or Central",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Out State or Central": {
+      "main": [
+        [
+          {
+            "node": "State or Central",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Find Out State or Central",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "State or Central": {
+      "main": [
+        [
+          {
+            "node": "Central Scheme Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "State Scheme Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Central Scheme Agent": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Central Scheme Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Central Data Policy Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Central Scheme Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Central Data Policy Tool",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Operation, do nothing": {
+      "main": [
+        [
+          {
+            "node": "Verifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifier": {
+      "main": [
+        [
+          {
+            "node": "AI Transform",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Transform": {
+      "main": [
+        [
+          {
+            "node": "Eligibility Checker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Eligibility Checker": {
+      "main": [
+        [
+          {
+            "node": "Translator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Eligibility Checker",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Translator": {
+      "main": [
+        [
+          {
+            "node": "Update Data in Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Data in Table": {
+      "main": [
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "State Scheme Agent": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "State Scheme Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "State Data Policy Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "State Scheme Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "State Data Policy Tool",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Central Scheme Doc Upload": {
+      "main": [
+        [
+          {
+            "node": "Central Document Uploader",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Central Document Uploader",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader1": {
+      "ai_document": [
+        [
+          {
+            "node": "Central Document Uploader",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader1",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "State Scheme Document Uplaod": {
+      "main": [
+        [
+          {
+            "node": "State Document Uploader",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI3": {
+      "ai_embedding": [
+        [
+          {
+            "node": "State Document Uploader",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "State Document Uploader",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter1": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Question and Answer Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Question and Answer Chain": {
+      "main": [
+        [
+          {
+            "node": "Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Question and Answer Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vector Store Retriever": {
+      "ai_retriever": [
+        [
+          {
+            "node": "Question and Answer Chain",
+            "type": "ai_retriever",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Vector Store Retriever",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI4": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Click to upload state scheme files": {
+      "main": [
+        [
+          {
+            "node": "Search for State Scheme Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search for State Scheme Files": {
+      "main": [
+        [
+          {
+            "node": "Download Files1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Files1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Click to upload central scheme files": {
+      "main": [
+        [
+          {
+            "node": "Search For Central Scheme Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search For Central Scheme Files": {
+      "main": [
+        [
+          {
+            "node": "Download Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Files": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "715f5bfc-17ce-4473-b2f9-170d4eb375d3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b3436970a0bc377d30680e251e1508719aae93af709914ac8a3ffee4ffc524ba"
+  },
+  "nodeGroups": [],
+  "id": "Ue4CFOLJeR2OGiWx",
+  "tags": []
+}
